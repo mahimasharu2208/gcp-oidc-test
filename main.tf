@@ -15,12 +15,12 @@ terraform {
 
 provider "google" {
   project = "hc-30d203c965e840f283fc935a3d4"
-  region  = var.region
+  region  = "us-central1"
 }
 
 resource "google_storage_bucket" "demo_bucket" {
   name          = "test-mahima"
-  location      = var.location
+  location      = "US"
   force_destroy = true   # allow destroy even if bucket has objects
 
   uniform_bucket_level_access = true
