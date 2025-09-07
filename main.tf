@@ -1,27 +1,43 @@
 terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 5.38" # recent provider version
-    }
-  }
   cloud {
     organization = "auth-learning"
     workspaces {
-      name = "gcp-oidc-test"
+      name = "gcp-oidc-tfc-test"
+    }
+  }
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.38"
     }
   }
 }
 
 provider "google" {
-  project = "hc-30d203c965e840f283fc935a3d4"
-  region  = "us-central1"
+  project = var.project_id
+  region  = var.region
 }
 
-resource "google_storage_bucket" "demo_bucket" {
-  name          = "test-mahima"
-  location      = "US"
-  force_destroy = true   # allow destroy even if bucket has objects
+# Example resource: GCS bucket
+resource "google_storage_bucket" "example" {
+  name          = "${var.project_id}-tfc-bucket"
+  location      = var.region
+  force_destroy = true
 
   uniform_bucket_level_access = true
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    action {
+      type = "Delete"
+    }
+    condition {
+      age = 30
+    }
+  }
 }
+
