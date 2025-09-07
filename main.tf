@@ -31,6 +31,7 @@ resource "google_storage_bucket" "example" {
     enabled = true
   }
 
+
   lifecycle_rule {
     action {
       type = "Delete"
