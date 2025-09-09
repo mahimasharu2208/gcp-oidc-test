@@ -1,44 +1,37 @@
-terraform {
-  cloud {
-    organization = "auth-learning"
-    workspaces {
-      name = "gcp-oidc-tfc-test"
+resource "google_service_account" "default" {
+  account_id   = "my-custom-sa"
+  display_name = "Custom SA for VM Instance"
+}
+resource "google_compute_instance" "default" {
+  name         = "my-instance"
+  machine_type = "n2-standard-2"
+  zone         = "us-central1-a"
+  tags = ["foo", "bar"]
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "value"
+      }
     }
   }
-
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 5.38"
+  // Local SSD disk
+  scratch_disk {
+    interface = "NVME"
+  }
+  network_interface {
+    network = "default"
+    access_config {
+      // Ephemeral public IP
     }
+  }
+  metadata = {
+    foo = "bar"
+  }
+  metadata_startup_script = "echo hi > /test.txt"
+  service_account {
+    # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
+    email  = google_service_account.default.email
+    scopes = ["cloud-platform"]
   }
 }
-
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-# Example resource: GCS bucket
-resource "google_storage_bucket" "example" {
-  name          = "${var.project_id}-tfc-bucket"
-  location      = var.region
-  force_destroy = true
-
-  uniform_bucket_level_access = true
-
-  versioning {
-    enabled = true
-  }
-
-
-  lifecycle_rule {
-    action {
-      type = "Delete"
-    }
-    condition {
-      age = 30
-    }
-  }
-}
-
